@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Detetor de Viés de Confirmação</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --border: #2a2a2a;
+      --accent: #c8f135;
+      --accent-dim: #9ab82a;
+      --text: #f0f0f0;
+      --text-muted: #888;
+      --danger: #ff5e5e;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px;
+    }
+
+    /* Background grain */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 780px;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      margin-bottom: 48px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #000;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      margin-top: 12px;
+      color: var(--text-muted);
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.6;
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* Bias type pills */
+    .bias-types {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .pill.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(200, 241, 53, 0.07);
+    }
+
+    /* Input card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .card label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      line-height: 1.7;
+      padding: 16px;
+      resize: vertical;
+      min-height: 130px;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+    }
+
+    textarea::placeholder {
+      color: #444;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
+      width: 100%;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 15px 24px;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover { background: #d6ff3d; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Spinner */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Result card */
+    #result-card {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      animation: fadeUp 0.4s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      background: rgba(200, 241, 53, 0.08);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-header .dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.5s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .result-header span {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .result-body {
+      padding: 28px;
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      line-height: 1.9;
+      color: #ccc;
+      white-space: pre-wrap;
+    }
+
+    /* Bold formatting inside result */
+    .result-body strong {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* Error */
+    .error-card {
+      background: rgba(255, 94, 94, 0.08);
+      border: 1px solid rgba(255, 94, 94, 0.3);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      color: var(--danger);
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      display: none;
+      animation: fadeUp 0.3s ease;
+    }
+
+    footer {
+      margin-top: 56px;
+      text-align: center;
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">Viés Cognitivo</div>
+      <h1>Detetor de<br><span>Viés de Confirmação</span></h1>
+      <p class="subtitle">Analisa questões em português e identifica padrões de viés cognitivo.</p>
+      <div class="bias-types">
+        <div class="pill" id="pill-0">Sem Viés</div>
+        <div class="pill" id="pill-1">Seleção de Evidência</div>
+        <div class="pill" id="pill-2">Fechamento Prematuro</div>
+        <div class="pill" id="pill-3">Efeito de Primazia</div>
+        <div class="pill" id="pill-4">Interpretação Assimétrica</div>
+      </div>
+    </header>
+
+    <div class="card">
+      <label>Questão a analisar</label>
+      <textarea id="question" placeholder="Escreve ou cola aqui a questão que queres analisar..."></textarea>
+      <button class="btn" id="analyze-btn" onclick="analyze()">
+        <div class="spinner" id="spinner"></div>
+        <span id="btn-text">Analisar Questão</span>
+      </button>
+    </div>
+
+    <div class="error-card" id="error-card"></div>
+
+    <div id="result-card">
+      <div class="result-header">
+        <div class="dot"></div>
+        <span>Resultado da Análise</span>
+      </div>
+      <div class="result-body" id="result-body"></div>
+    </div>
+
+    <footer>Powered by Llama 4 Maverick &nbsp;·&nbsp; Viés de Confirmação</footer>
+  </div>
+
+  <script>
+    async function analyze() {
+      const question = document.getElementById("question").value.trim();
+      const btn = document.getElementById("analyze-btn");
+      const spinner = document.getElementById("spinner");
+      const btnText = document.getElementById("btn-text");
+      const resultCard = document.getElementById("result-card");
+      const resultBody = document.getElementById("result-body");
+      const errorCard = document.getElementById("error-card");
+
+      if (!question) {
+        errorCard.textContent = "Por favor, escreve uma questão antes de analisar.";
+        errorCard.style.display = "block";
+        resultCard.style.display = "none";
+        return;
+      }
+
+      // Reset UI
+      errorCard.style.display = "none";
+      resultCard.style.display = "none";
+      btn.disabled = true;
+      spinner.style.display = "block";
+      btnText.textContent = "A analisar...";
+      resetPills();
+
+      try {
+        const response = await fetch("/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          errorCard.textContent = "Erro: " + data.error;
+          errorCard.style.display = "block";
+        } else {
+          // Render result with bold formatting
+          resultBody.innerHTML = formatResult(data.result);
+          resultCard.style.display = "block";
+          highlightPill(data.result);
+        }
+      } catch (err) {
+        errorCard.textContent = "Erro de ligação ao servidor.";
+        errorCard.style.display = "block";
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = "none";
+        btnText.textContent = "Analisar Questão";
+      }
+    }
+
+    function formatResult(text) {
+      // Convert **bold** to <strong>
+      return text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    }
+
+    function highlightPill(result) {
+      const map = {
+        "Sem Viés": 0,
+        "Seleção de Evidência": 1,
+        "Fechamento Prematuro": 2,
+        "Efeito de Primazia": 3,
+        "Interpretação Assimétrica": 4,
+      };
+      for (const [key, idx] of Object.entries(map)) {
+        if (result.includes(key)) {
+          document.getElementById("pill-" + idx).classList.add("active");
+          break;
+        }
+      }
+    }
+
+    function resetPills() {
+      for (let i = 0; i <= 4; i++) {
+        document.getElementById("pill-" + i).classList.remove("active");
+      }
+    }
+
+    // Allow Ctrl+Enter to submit
+    document.getElementById("question").addEventListener("keydown", function(e) {
+      if (e.ctrlKey && e.key === "Enter") analyze();
+    });
+  </script>
+</body>
+</html>
