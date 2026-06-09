@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Confirmation Bias Detector</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Strichpunkt+Sans:wght@400..900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root[data-theme="dark"] {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --border: #2a2a2a;
+      --accent: #99acff;
+      --accent-hover: #c2cdff;
+      --accent-glow: rgba(153, 172, 255, 0.07);
+      --text: #f0f0f0;
+      --text-muted: #888;
+      --danger: #ff5e5e;
+      --result-bg: rgba(109, 53, 241, 0.08);
+      --toggle-icon: "☀️";
+    }
+
+    :root[data-theme="light"] {
+      --bg: #f4f5ff;
+      --surface: #ffffff;
+      --border: #dde0f5;
+      --accent: #5b6ef5;
+      --accent-hover: #3a4edc;
+      --accent-glow: rgba(91, 110, 245, 0.08);
+      --text: #111122;
+      --text-muted: #666880;
+      --danger: #d93025;
+      --result-bg: rgba(91, 110, 245, 0.06);
+      --toggle-icon: "🌙";
+    }
+
+    :root {
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Bebas Neue', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 780px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Theme toggle */
+    .top-bar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 32px;
+    }
+
+    .toggle-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: 'Strichpunkt Sans', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .toggle-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    header {
+      margin-bottom: 48px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 16px;
+      font-family: 'Strichpunkt Sans', monospace;
+    }
+
+    h1 {
+      font-size: clamp(4rem, 16vw, 7rem);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: 0.01em;
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      margin-top: 12px;
+      color: var(--text-muted);
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.6;
+      font-family: 'Strichpunkt Sans', monospace;
+    }
+
+    .bias-types {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-family: 'Strichpunkt Sans', monospace;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .pill.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .card label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      font-family: 'Strichpunkt Sans', monospace;
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Strichpunkt Sans', monospace;
+      font-size: 15px;
+      line-height: 1.7;
+      padding: 16px;
+      resize: vertical;
+      min-height: 130px;
+      transition: border-color 0.2s, background 0.3s;
+      outline: none;
+    }
+
+    textarea:focus { border-color: var(--accent); }
+    textarea::placeholder { color: var(--border); }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 15px 24px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #result-card {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      animation: fadeUp 0.4s ease;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      background: var(--result-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-header .dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.5s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .result-header span {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-family: 'Strichpunkt Sans', monospace;
+    }
+
+    .result-body {
+      padding: 28px;
+      font-family: 'Strichpunkt Sans', monospace;
+      font-size: 14px;
+      line-height: 1.9;
+      color: var(--text-muted);
+      white-space: pre-wrap;
+    }
+
+    .result-body strong { color: var(--accent); font-weight: 600; }
+
+    .error-card {
+      background: rgba(255, 94, 94, 0.08);
+      border: 1px solid rgba(255, 94, 94, 0.3);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      color: var(--danger);
+      font-family: 'Strichpunkt Sans', monospace;
+      font-size: 14px;
+      display: none;
+      animation: fadeUp 0.3s ease;
+    }
+
+    footer {
+      margin-top: 56px;
+      text-align: center;
+      font-size: 12px;
+      font-family: 'Strichpunkt Sans', monospace;
+      color: var(--text-muted);
+      opacity: 0.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="top-bar">
+      <button class="toggle-btn" onclick="toggleTheme()" id="theme-btn">
+        <span id="theme-icon">☀️</span>
+        <span id="theme-label">Light Mode</span>
+      </button>
+    </div>
+
+    <header>
+      <div class="badge">Cognitive Bias</div>
+      <h1>Confirmation<br><span>Bias Detector</span></h1>
+      <p class="subtitle">Analyzes questions and identifies confirmation bias patterns.</p>
+      <div class="bias-types">
+        <div class="pill" id="pill-0">No Bias</div>
+        <div class="pill" id="pill-1">Evidence Selection</div>
+        <div class="pill" id="pill-2">Premature Closure</div>
+        <div class="pill" id="pill-3">Primacy Effect</div>
+        <div class="pill" id="pill-4">Asymmetric Interpretation</div>
+      </div>
+    </header>
+
+    <div class="card">
+      <label>Question to analyze</label>
+      <textarea id="question" placeholder="Type or paste the question you want to analyze..."></textarea>
+      <button class="btn" id="analyze-btn" onclick="analyze()">
+        <div class="spinner" id="spinner"></div>
+        <span id="btn-text">Analyze Question</span>
+      </button>
+    </div>
+
+    <div class="error-card" id="error-card"></div>
+
+    <div id="result-card">
+      <div class="result-header">
+        <div class="dot"></div>
+        <span>Analysis Result</span>
+      </div>
+      <div class="result-body" id="result-body"></div>
+    </div>
+
+    <footer>Powered by Llama 4 Scout &nbsp;·&nbsp; Confirmation Bias Detector</footer>
+  </div>
+
+  <script>
+    // Theme toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      document.getElementById('theme-icon').textContent = isDark ? '🌙' : '☀️';
+      document.getElementById('theme-label').textContent = isDark ? 'Dark Mode' : 'Light Mode';
+    }
+
+    // Analyze
+    async function analyze() {
+      const question = document.getElementById("question").value.trim();
+      const btn = document.getElementById("analyze-btn");
+      const spinner = document.getElementById("spinner");
+      const btnText = document.getElementById("btn-text");
+      const resultCard = document.getElementById("result-card");
+      const resultBody = document.getElementById("result-body");
+      const errorCard = document.getElementById("error-card");
+
+      if (!question) {
+        errorCard.textContent = "Please enter a question before analyzing.";
+        errorCard.style.display = "block";
+        resultCard.style.display = "none";
+        return;
+      }
+
+      errorCard.style.display = "none";
+      resultCard.style.display = "none";
+      btn.disabled = true;
+      spinner.style.display = "block";
+      btnText.textContent = "Analyzing...";
+      resetPills();
+
+      try {
+        const response = await fetch("/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          errorCard.textContent = "Error: " + data.error;
+          errorCard.style.display = "block";
+        } else {
+          resultBody.innerHTML = formatResult(data.result);
+          resultCard.style.display = "block";
+          highlightPill(data.result);
+        }
+      } catch (err) {
+        errorCard.textContent = "Connection error. Please try again.";
+        errorCard.style.display = "block";
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = "none";
+        btnText.textContent = "Analyze Question";
+      }
+    }
+
+    function formatResult(text) {
+      return text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    }
+
+    function highlightPill(result) {
+      const map = {
+        "Sem Viés": 0, "No Bias": 0,
+        "Seleção de Evidência": 1, "Evidence Selection": 1,
+        "Fechamento Prematuro": 2, "Premature Closure": 2,
+        "Efeito de Primazia": 3, "Primacy Effect": 3,
+        "Interpretação Assimétrica": 4, "Asymmetric Interpretation": 4,
+      };
+      for (const [key, idx] of Object.entries(map)) {
+        if (result.includes(key)) {
+          document.getElementById("pill-" + idx).classList.add("active");
+          break;
+        }
+      }
+    }
+
+    function resetPills() {
+      for (let i = 0; i <= 4; i++) {
+        document.getElementById("pill-" + i).classList.remove("active");
+      }
+    }
+
+    document.getElementById("question").addEventListener("keydown", function(e) {
+      if (e.ctrlKey && e.key === "Enter") analyze();
+    });
+  </script>
+</body>
+</html>
