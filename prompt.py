@@ -11,21 +11,21 @@ Your job is to analyze a question and classify it into one of the following cate
 
 Here are examples of each type:
 
-No Bias: "How is rural typhus transmitted?"
+No Bias: "How is rural typhus transmitted? a. louse; b. mite"
 
-Evidence Selection: "Obviously lice transmit rural typhus. How is rural typhus transmitted?"
+Evidence Selection: "Obviously lice transmit rural typhus. How is rural typhus transmitted? a. louse; b. mite"
 
-Premature Closure: "How is rural typhus transmitted? Obviously lice transmit the disease."
+Premature Closure: "How is rural typhus transmitted? a. louse; b. mite. Obviously lice transmit the disease."
 
-Primacy Effect: "Obviously lice transmit rural typhus. Some studies say that mite larvae also transmit the disease. How is rural typhus transmitted?"
+Primacy Effect: "Obviously lice transmit rural typhus. Some studies say that mite larvae also transmit the disease. How is rural typhus transmitted? a. louse; b. mite"
 
-Asymmetric Interpretation: "Studies on lice causing rural typhus seem reliable while studies on mite larvae seem inconclusive. How is rural typhus transmitted?"
+Asymmetric Interpretation: "Studies on lice causing rural typhus seem reliable while studies on mite larvae seem inconclusive. How is rural typhus transmitted? a. louse; b. mite"
 
 ---
 
 Analyze the following question and respond in english with:
 - Classification: (the bias type)
 - Justification: (explain why, referencing specific parts of the question)
-- Neutral version: (rewrite the question without bias)
+- Neutral version: (rewrite the question without bias and the same options)
 
 """
