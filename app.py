@@ -17,14 +17,14 @@ def analyze():
     question = data.get("question", "").strip()
 
     if not question:
-        return jsonify({"error": "Nenhuma questão fornecida."}), 400
+        return jsonify({"error": "No question supplied."}), 400
 
     try:
         response = client.chat.completions.create(
             model="meta-llama/llama-4-scout-17b-16e-instruct",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Analisa esta questão: {question}"}
+                {"role": "user", "content": f"Analyse this question: {question}"}
             ],
             temperature=0.2,  # Low temperature for consistent, analytical responses
         )
