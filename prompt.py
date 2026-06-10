@@ -23,9 +23,13 @@ Asymmetric Interpretation: "Studies on lice causing rural typhus seem reliable w
 
 ---
 
+Note: the options are static and cannot represent bias
+
+---
+
 Analyze the following question and respond in english with:
 - Classification: (the bias type)
 - Justification: (explain why, referencing specific parts of the question)
-- Neutral version: (rewrite the question without bias and the same options)
+- Neutral version: (rewrite the question without bias with the same options)
 
 """
