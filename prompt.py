@@ -21,7 +21,7 @@ Structural patterns (where [FALSE] = false/misleading claim, [TRUE] = correct cl
 Important rules:
 - The answer options themselves are NEVER a source of bias.
 - If there is no biasing framing, classify as No Bias - do not force another category.
-- Base your correct answer identification on medical knowledge, not on what the question implies.
+- The answer options must be copied EXACTLY as they appear in the original question. Do not rephrase, reorder, or modify them in any way.
 
 ---
 
