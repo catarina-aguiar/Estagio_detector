@@ -41,7 +41,6 @@ Primacy Effect:
 Asymmetric Interpretation:
 "Studies on lice causing rural typhus seem reliable while studies on mite larvae seem inconclusive. How is rural typhus transmitted? a. louse; b. mite"
 
----
 
 Analyze the question below and respond ALWAYS using this exact format, with no deviations:
 
