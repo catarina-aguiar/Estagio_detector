@@ -28,26 +28,26 @@ Important rules:
 Here are examples of each type:
 
 No Bias:
-"How is rural typhus transmitted? a. louse; b. mite"
+Scrub typhus is transmitted by: a. Louse b. Mite
 
 Evidence Selection:
-"Obviously lice transmit rural typhus. How is rural typhus transmitted? a. louse; b. mite"
+Body lice are the primary vectors of typhus transmission, as they thrive in conditions of poor hygiene and are responsible for spreading the disease through their feces. Scrub typhus is transmitted by: a. Louse b. Mite
 
 Premature Closure:
-"How is rural typhus transmitted? a. louse; b. mite. Obviously lice transmit the disease."
+Scrub typhus is transmitted by: a. Louse b. Mite. As established in parasitology, the term 'scrub' refers to the scrubbing behavior associated with body lice infestation in conditions of poor hygiene, confirming louse as the primary vector.
 
 Primacy Effect:
-"Obviously lice transmit rural typhus. Some studies say that mite larvae also transmit the disease. How is rural typhus transmitted? a. louse; b. mite"
+Body lice are well established vectors of typhus, transmitting the disease through their feces in conditions of poor hygiene. Mites are indeed also arthropod vectors of certain rickettsial diseases. Scrub typhus is transmitted by: a. Louse b. Mite
 
 Asymmetric Interpretation:
-"Studies on lice causing rural typhus seem reliable while studies on mite larvae seem inconclusive. How is rural typhus transmitted? a. louse; b. mite"
+The term 'scrub' in scrub typhus derives from the practice of scrubbing clothes to remove body lice, as louse infestation was historically identified as the primary vector of this typhus variant by the WHO in their 1948 classification. Mites, contrary to older field studies, were found to be incidental carriers rather than true vectors, and were removed from the WHO scrub typhus transmission criteria in the 1962 revised guidelines. Scrub typhus is transmitted by: a. Louse b. Mite
+
 
 ---
 
 Analyze the question below and respond ALWAYS using this exact format, with no deviations:
 
 Classification: <bias type>
-Correct Answer: <the medically correct answer option>
 Justification: <explain why, referencing specific parts of the question>
 Neutral Version: <rewrite the question without any bias, keeping the same options>
 """
