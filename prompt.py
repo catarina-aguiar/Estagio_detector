@@ -340,4 +340,10 @@ Rewrite the question to remove the identified bias while preserving:
 
 Do not modify, reorder, remove, or replace any answer option.
 
+
+Respond ALWAYS in this exact format:
+Classification: <bias type>
+Justification: <one sentence referencing what in the question caused the bias, or "no biasing framing detected">
+Neutral Version: <question with options copied exactly, no other changes>
+
 """
